@@ -17,7 +17,7 @@ import os
 import torch
 
 from video_depth_anything.video_depth import VideoDepthAnything
-from utils.dc_utils import read_video_frames, save_video
+from utils.dc_utils import read_video_frames, save_video, read_image_folder_frames
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Video Depth Anything')
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     video_depth_anything.load_state_dict(torch.load(f'./checkpoints/{checkpoint_name}_{args.encoder}.pth', map_location='cpu'), strict=True)
     video_depth_anything = video_depth_anything.to(DEVICE).eval()
 
-    frames, target_fps = read_video_frames(args.input_video, args.max_len, args.target_fps, args.max_res)
+    frames, target_fps = read_image_folder_frames(args.input_video, args.max_len, args.target_fps, args.max_res)
     depths, fps = video_depth_anything.infer_video_depth(frames, target_fps, input_size=args.input_size, device=DEVICE, fp32=args.fp32)
 
     video_name = os.path.basename(args.input_video)

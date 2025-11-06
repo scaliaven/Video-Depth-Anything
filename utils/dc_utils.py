@@ -68,6 +68,41 @@ def read_video_frames(video_path, process_length, target_fps=-1, max_res=-1):
 
     return frames, fps
 
+def read_image_folder_frames(folder_path, process_length=-1, target_fps=-1, max_res=-1):
+    """
+    Read frames directly from a folder of images (e.g. .png, .jpg).
+    Automatically sorted by filename.
+    """
+    import os
+    import cv2
+    # Collect image files
+    image_files = sorted(
+        [f for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    )
+
+    if process_length > 0:
+        image_files = image_files[:process_length]
+
+    frames = []
+    for img_name in image_files:
+        img_path = os.path.join(folder_path, img_name)
+        img = cv2.imread(img_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # if max_res > 0:
+        #     h, w = img.shape[:2]
+        #     if max(h, w) > max_res:
+        #         scale = max_res / max(h, w)
+        #         new_h = round(h * scale)
+        #         new_w = round(w * scale)
+        img = cv2.resize(img, (256, 256))
+
+        frames.append(img)
+    frames = np.stack(frames, axis=0)
+
+    # Folder images often don't have a known FPS → set dummy value
+    fps = target_fps if target_fps > 0 else 30.0
+    return frames, fps
 
 def save_video(frames, output_video_path, fps=10, is_depths=False, grayscale=False):
     writer = imageio.get_writer(output_video_path, fps=fps, macro_block_size=1, codec='libx264', ffmpeg_params=['-crf', '18'])
